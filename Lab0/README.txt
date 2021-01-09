@@ -1,0 +1,1 @@
+I, Remy Ogasawara, have read and understood the Winter CSE12 syllabus and Personal Responsibility Document. rsogasaw 8 January 2021

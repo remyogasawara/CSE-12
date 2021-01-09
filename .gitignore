@@ -7,5 +7,6 @@
 .bbl
 .blg
 .aux
+*/.DS_Store
 .DS_Store
 
