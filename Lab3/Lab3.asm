@@ -26,10 +26,26 @@
 #	syscall 4
 #	j checkValid 
 # endValid: 
-# starLoop: 
+#
+# counter starts at 0 
+# patternLoop: 
+#	increase counter
+# 	bgt counter, input, patternEnd
+#	starCounter starts at 0
+#	stars:
+#		increase counter
+#		bge starCounter, counter, endStars 
+#		* (42) 
+#		tab (9)
+# 		syscall 11
+#		j stars
+#	endStars:
+#	input
+#	syscall 1
+#	stars loop again
+#	j patternLoop 
+# patternEnd:  
 #	
-#	syscall 5 
-# donePrinting:
 ##########################################################################                           = 
 .data # for putting stuf in memory before the code runs 
 prompt: .asciiz "Enter the height of the pattern (greater than 0):	"
@@ -38,7 +54,9 @@ errorMessage: .asciiz "Invalid Entry!\n"
 .text # tells the computer where the code starts 
 # $v0 --- holds the syscall number 
 # $a0 --- holds the printed value
-# $t1 --- holds the user input
+# $t0 --- holds the user input
+# $t1 --- holds the counter for patternLoop
+# $t2 --- holds the counter for starsLoop
 
 # stay in loop until user input is greater than 0 
 checkValid: 
@@ -48,9 +66,9 @@ checkValid:
 	
 	li $v0 5 # sets syscall to 5 (input) 
 	syscall # user's input
-	move $t1 $v0 # moves the user input into $t1 
+	move $t0 $v0 # moves the user input into $t1 
 
-	bgt $t1 0 endValid # if input is greater than 0, exit loop
+	bgt $t0 0 endValid # if input is greater than 0, exit loop
 	
 	li $v0 4 # sets syscall to 4 (string) 
 	la $a0 errorMessage # store errorMessage in $a0
@@ -58,4 +76,29 @@ checkValid:
 	
 	j checkValid # restarts the loop
 endValid: # exits the checking loop 
+
+li $t1 0 # counter for patternLoop  
+patternLoop:
+	addi $t1 $t1 1 # increase the counter for the integer
+	bgt $t1 $t0 patternEnd
+	li $t2 0 # counter for stars loop
+	starsLoop:
+		addi $t2 $t2 1 # increase the counter for stars loop 
+		bge $t2 $t1 starsEnd
+		li $v0 11
+		li $a0 42 
+		syscall
+		
+		j starsLoop
+	starsEnd: 
+	
+	li $v0 1 # sets syscall to 1 (ASCII int) 
+	move $a0 $t1 # puts the value in $t1 into the print register
+	syscall 
+	
+	li $v0 11 # sets syscall to 11 (ASCII char) 
+	li $a0 10 #goes to the next line
+	syscall
+	j patternLoop # restarts the patternLoop
+patternEnd: 
 
