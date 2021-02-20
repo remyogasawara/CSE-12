@@ -17,13 +17,20 @@
 #
 ##########################################################################
 # Psuedocode:  
+# .data 
+# buffer 
+# Success message
+# Error message: brace mismatch, braces still on stack 
 #
-#
-#
-#
-#
-#
-#
+# .text
+# needs a buffer 
+# traverse through the text from argument
+#    if char is '(' or '{' or '[':
+#        push
+#    else if char is ')' or '}' or ']'
+#        if stack is empty of top of stack does not parir with char 
+#             return error, type of brace and index
+#        else
 #
 ##########################################################################
 .text 
@@ -31,7 +38,5 @@
 .data 
 # registers: 
 # $v0: holds the syscall number 
-# $a0: holds the printed value
-# $t0: holds the user input
-# $t1: holds the counter for patternLoop
-# $t2: holds the counter for starsLoops
+# $a0: 
+# $s0: 
