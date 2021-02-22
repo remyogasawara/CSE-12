@@ -11,7 +11,7 @@ In this lab, we are introduced to the MIPS ISA using MARS. This programs asks fo
 -----------
 FILES
 
-Lab3.lgi
+Lab3.asm
 This file includes the pseudocode and written code. 
 
 -----------
