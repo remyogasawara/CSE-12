@@ -62,48 +62,74 @@ la      $a1 buffer      # address of buffer from which to write
 la      $a2 20          # max char length 
 syscall                 # read file 
 
+printLoop:
+     
+     li      $v0 1                # sycall for ascii integer 
+     lb      $a0 ($s0)            # loads the byte into the $a0 register 
+     move    $t1 $a0              # moves to byte to the $t1 register 
+     beq     $t1 0     printEnd   # ends the loops if the byte is null 
+     
+     # print char 
+     lb      $a0 ($s0)
+     li      $v0 11
+     syscall 
 
-# print file contents 
-li      $v0 4           # print string syscall 
-la      $a0 buffer      # address of buffer 
-syscall                 # prints the contents of the txt file 
-move    $s0 $a0         # move the contents of the string 
+     # print tab 
+     li      $a0 0x9
+     li      $v0 11
+     syscall
 
-# new line 
-li $a0 10
-li $v0 11 
-syscall
+     # print ascii num  
+     lb      $a0 ($s0)
+     li      $v0 1
+     syscall
 
-######### printing characters 
-# print char 
-lb $a0 0($s0)
-li $v0 11
+     # new line 
+     li      $a0 10
+     li      $v0 11 
+     syscall
+    
+     addi    $s0 $s0 1 
+     addi    $t2 $t2 1 
+     j printLoop
+     
+printEnd:
+
+#################### STACK ####################
+PUSH:
+# pushes a brace that is in $s0 into the stack 
+addi $sp $sp -4
+sw $s0 ($sp) 
+
+move $a0 $s0
+li $v0 1
 syscall 
 
-# print tab 
+## shows the stack works 
 li $a0 0x9
 li $v0 11
 syscall
 
-# print char 
-lb $a0 1($s0)
-li $v0 11
+#addi $s0 $s0 -100
+
+#move $a0 $s0 
+#li $v0 1
+#syscall 
+
+#li $a0 0x9
+#li $v0 11
+#syscall
+
+###
+
+POP:
+lw $s0 ($sp) 
+addi $sp $sp 4
+
+move $a0 $s0
+li $v0 1 
 syscall 
 
-# print tab 
-li $a0 0x9
-li $v0 11
-syscall
-
-# print char 
-lb $a0 2($s0)
-li $v0 11
-syscall 
-
-# new line 
-li $a0 10
-li $v0 11 
-syscall
 ###########
 
 # close file  
