@@ -6,7 +6,7 @@ Lab 4: Syntax Checker
 -----------
 DESCRIPTION
 
-In this lab, we open a .txt file and determine whether it has balanced races, brackets and parentheses. This lab uses MIPS and the stack, and reports either the location of a mismatch or the number of matched items on success. 
+In this lab, we open a .txt file and determine whether it has balanced braces, brackets and parentheses. This lab uses MIPS and the stack, and reports either the location of a mismatch or the number of matched items on success. 
 
 -----------
 FILES
