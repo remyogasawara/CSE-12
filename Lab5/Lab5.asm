@@ -28,13 +28,24 @@
 #     t reg = (y * 128) + x   
 #     t reg = t reg * 4
 #     output = origin + t reg  
-# clear_bitmap 
-# draw_pixel
+# clear_bitmap:
+#     traverse through pixels:
+#          draw_pixel(color of clear) 
+# draw_pixel:
+#     getPixelAddress 
+#     store the color into the pixel address 
 # get_pixel:
 #     getPixelAddress
-# draw_verticle_line
-# draw_horizontal_line 
-# draw_crosshair 
+# draw_verticle_line:
+#     traverse bitmap, add y by 1 byte from [0, 128):
+#          draw_pixel
+# draw_horizontal_line: 
+#     traverse bitmpa, add x by 1 byte from [0, 128)
+# draw_crosshair:
+#     store (x, y) bit to save color 
+#     draw horizontal line
+#     draw verticle line 
+#     recolor (x, y) with old color 
 ######################################################
 # Macros for instructor use (you shouldn't need these)
 ######################################################
@@ -65,7 +76,7 @@
 #	%y: register to store 0x000000YY in
 .macro getCoordinates(%input %x %y)
         srl  %x %input 16                           # shift 0x00XX00YY to be 0x000000XX and store in %x 
-        andi %y %input 0x000000FF                   # only get the last two bytes of 0x00XX00YY 
+        andi %y %input 0x0000FFFF                   # only get the last two bytes of 0x00XX00YY 
 .end_macro
 
 # Macro that takes Coordinates in (%x,%y) where
@@ -130,8 +141,15 @@ clear_bitmap: nop
 #	Outputs:
 #		No register outputs
 #*****************************************************
+# $t0: store x 
+# $t1: store y 
+# $t2: origin 
+# $t3: pixel address 
 draw_pixel: nop
 	# YOUR CODE HERE, only use t registers (and a, v where appropriate)
+	getCoordinates($a0 $t0 $t1)
+	getPixelAddress(%output %x %y %origin)
+	
 	jr $ra
 	
 #*****************************************************
@@ -150,7 +168,7 @@ draw_pixel: nop
 get_pixel: nop
 	# YOUR CODE HERE, only use t registers (and a, v where appropriate)
 	getCoordinates($a0 $t0 $t1)
-	li $t2 0x00000000
+	la $t2 originAddress
 	getPixelAddress($t3 $t0 $t1 $t2) 
 	lw $v0 0($t3)
 	jr $ra
