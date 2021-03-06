@@ -75,8 +75,8 @@
 #	%x: register to store 0x000000XX in
 #	%y: register to store 0x000000YY in
 .macro getCoordinates(%input %x %y)
-        srl  %x %input 16                           # shift 0x00XX00YY to be 0x000000XX and store in %x 
-        andi %y %input 0x000000FF                   # only get the last two bytes of 0x00XX00YY 
+        srl  %x %input 16                               # shift 0x00XX00YY to be 0x000000XX and store in %x 
+        andi %y %input 0x000000FF                       # only get the last two bytes of 0x00XX00YY 
 .end_macro
 
 # Macro that takes Coordinates in (%x,%y) where
@@ -103,7 +103,7 @@
 	mul %output %y      128                         # 128 * y stored in %output
 	add %output %output %x                          # (128 * y) + x stored in %output
 	mul %output %output 4                           # (128 * y + x) * 4 stored in %output 
-	add %output %origin %output                   # (128 * y + x) * 4 + origin stored in %output 
+	add %output %origin %output                     # (128 * y + x) * 4 + origin stored in %output 
 .end_macro
 
 
@@ -127,29 +127,30 @@ syscall
 # Outputs:
 #	No register outputs
 #*****************************************************
-# $t0: x 
-# $t1: y 
+# $t0: x coordinate
+# $t1: y coordinate
+# $t2: origin
+# $t3: pixel address 
 clear_bitmap: nop
 	# YOUR CODE HERE, only use t registers (and a, v where appropriate)
- 	lw $t2 originAddress                  # start with the origin, (0,0) 
-        #getCoordinates($t2 $t0 $t1)           # initialize rows in $t0 and columns in $t1 
- 	li $t0 0x0000FFFF
- 	li $t1 0x00000000
- 	rows:
- 	     bge $t0 128 rowsEnd 
- 	     nop
- 	     columns:
- 	           bge $t1 128 columnsEnd
+ 	lw $t2 originAddress                          # start with the origin, (0,0) 
+ 	li $t0 0                                      # initialize rows counter to 0
+ 	rows:                                         # traverse through rows 
+ 	     bge $t0 128 rowsEnd                      # branch if x >= 128
+             nop
+             li $t1 0                                 # initialize columns counter to 0
+ 	     columns:                                 # traverse through columns 
+ 	           bge $t1 128 columnsEnd             # branch if y >= 128
  	           nop
- 	           getPixelAddress($t3 $t0 $t1 $t2)
-                   sw $a0 ($t3)
- 	           addi $t1 $t1 1 
- 	           j columns
- 	     columnsEnd: 
- 	     addi $t0 $t0 1 
- 	     j rows
- 	rowsEnd: 
- 	jr $ra
+ 	           getPixelAddress($t3 $t0 $t1 $t2)   # get address of (x,y)
+                   sw $a0 ($t3)                       # store color in (x,y)
+ 	           addi $t1 $t1 1                     # increase y value 
+ 	           j columns                          # restart rows loop
+ 	     columnsEnd:                              # end columns loop
+ 	     addi $t0 $t0 1                           # increase x value  
+ 	     j rows                                   # restart rows loop
+ 	rowsEnd:                                      # end rows loop 
+ 	jr $ra                                        # return to register address 
 
 #*****************************************************
 # draw_pixel: Given a coordinate in $a0, sets corresponding 
@@ -167,11 +168,11 @@ clear_bitmap: nop
 # $t3: pixel address 
 draw_pixel: nop
 	# YOUR CODE HERE, only use t registers (and a, v where appropriate)
-	getCoordinates($a0 $t0 $t1)
-	lw $t2 originAddress
-	getPixelAddress($t3 $t0 $t1 $t2) 
-	sw $a1 ($t3)
-	jr $ra
+	getCoordinates($a0 $t0 $t1)                    # get x and y values of $a0 
+	lw $t2 originAddress                           # get origin 
+	getPixelAddress($t3 $t0 $t1 $t2)               # get address of (x,y) 
+	sw $a1 ($t3)                                   # store color $a1 into pixel at (x,y)
+	jr $ra                                         # return to register address 
 	
 #*****************************************************
 # get_pixel:
@@ -188,11 +189,11 @@ draw_pixel: nop
 # $t3: pixel adress  
 get_pixel: nop
 	# YOUR CODE HERE, only use t registers (and a, v where appropriate)
-	getCoordinates($a0 $t0 $t1)
-	lw $t2 originAddress
-	getPixelAddress($t3 $t0 $t1 $t2) 
-	lw $v0 ($t3)
-	jr $ra
+	getCoordinates($a0 $t0 $t1)                    # get x and y values at $a0 
+	lw $t2 originAddress                           # get origin 
+	getPixelAddress($t3 $t0 $t1 $t2)               # get address of (x,y)
+	lw $v0 ($t3)                                   # get contents (color) of (x,y)
+	jr $ra                                         # return to register address 
 
 #*****************************************************
 # draw_horizontal_line: Draws a horizontal line
