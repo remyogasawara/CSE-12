@@ -76,7 +76,7 @@
 #	%y: register to store 0x000000YY in
 .macro getCoordinates(%input %x %y)
         srl  %x %input 16                           # shift 0x00XX00YY to be 0x000000XX and store in %x 
-        andi %y %input 0x0000FFFF                   # only get the last two bytes of 0x00XX00YY 
+        andi %y %input 0x000000FF                   # only get the last two bytes of 0x00XX00YY 
 .end_macro
 
 # Macro that takes Coordinates in (%x,%y) where
@@ -87,8 +87,8 @@
 #	%y: register containing 0x000000YY
 #	%output: register to store 0x00XX00YY in
 .macro formatCoordinates(%output %x %y)
-	sll %x      %x 16                           # shift 0x000000XX to be 0x00XX0000 and store in %x
-	or  %output %x %y                           # 0x00XX0000 or 0x000000YY to get 0x00XX00YY and store in %output 
+	sll %x      %x 16                               # shift 0x000000XX to be 0x00XX0000 and store in %x
+	or  %output %x %y                               # 0x00XX0000 or 0x000000YY to get 0x00XX00YY and store in %output 
 .end_macro 
 
 # Macro that converts pixel coordinate to address
@@ -100,10 +100,10 @@
 #	%output: register to store memory address in
 .macro getPixelAddress(%output %x %y %origin)
 	# YOUR CODE HERE 
-	mul $t0     %y      128                     # 128 * y stored in $t0
-	add $t0     $t0     %x                      # (128 * y) + x stored in $t0 
-	mul $t0     $t0     4                       # (128 * y + x) * 4 stored in $t0 
-	add %output %origin $t0                     # (128 * y + x) * 4 + origin stored in %output 
+	mul %output %y      128                         # 128 * y stored in %output
+	add %output %output %x                          # (128 * y) + x stored in %output
+	mul %output %output 4                           # (128 * y + x) * 4 stored in %output 
+	add %output %origin %output                   # (128 * y + x) * 4 + origin stored in %output 
 .end_macro
 
 
@@ -127,8 +127,28 @@ syscall
 # Outputs:
 #	No register outputs
 #*****************************************************
+# $t0: x 
+# $t1: y 
 clear_bitmap: nop
 	# YOUR CODE HERE, only use t registers (and a, v where appropriate)
+ 	lw $t2 originAddress                  # start with the origin, (0,0) 
+        #getCoordinates($t2 $t0 $t1)           # initialize rows in $t0 and columns in $t1 
+ 	li $t0 0x0000FFFF
+ 	li $t1 0x00000000
+ 	rows:
+ 	     bge $t0 128 rowsEnd 
+ 	     nop
+ 	     columns:
+ 	           bge $t1 128 columnsEnd
+ 	           nop
+ 	           getPixelAddress($t3 $t0 $t1 $t2)
+                   sw $a0 ($t3)
+ 	           addi $t1 $t1 1 
+ 	           j columns
+ 	     columnsEnd: 
+ 	     addi $t0 $t0 1 
+ 	     j rows
+ 	rowsEnd: 
  	jr $ra
 
 #*****************************************************
@@ -148,8 +168,9 @@ clear_bitmap: nop
 draw_pixel: nop
 	# YOUR CODE HERE, only use t registers (and a, v where appropriate)
 	getCoordinates($a0 $t0 $t1)
-	getPixelAddress(%output %x %y %origin)
-	
+	lw $t2 originAddress
+	getPixelAddress($t3 $t0 $t1 $t2) 
+	sw $a1 ($t3)
 	jr $ra
 	
 #*****************************************************
@@ -163,14 +184,14 @@ draw_pixel: nop
 #*****************************************************
 # $t0: x register 
 # $t1: y register 
-# $t2: origin (0,0)
+# $t2: origin
 # $t3: pixel adress  
 get_pixel: nop
 	# YOUR CODE HERE, only use t registers (and a, v where appropriate)
 	getCoordinates($a0 $t0 $t1)
-	la $t2 originAddress
+	lw $t2 originAddress
 	getPixelAddress($t3 $t0 $t1 $t2) 
-	lw $v0 0($t3)
+	lw $v0 ($t3)
 	jr $ra
 
 #*****************************************************
