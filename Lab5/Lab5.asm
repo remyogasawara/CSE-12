@@ -21,31 +21,70 @@
 # getCoordinate 
 #     x = srl output by 16  
 #     y = andi output by 0xFFFF
+#
 # formatCoordiante:
 #     x shift left 16
 #     or x and y 
+#
 # getPixelAddress:  
 #     t reg = (y * 128) + x   
 #     t reg = t reg * 4
 #     output = origin + t reg  
+#
 # clear_bitmap:
-#     traverse through pixels:
-#          draw_pixel(color of clear) 
+#     x = 0  
+#     rows:
+#         branch if x >= 128
+#         y = 0
+#         columns: 
+#             branch if y >= 128
+#             get pixelAddress
+#             store color in address 
+#             y += 1 
+#         x += 1 
+#
 # draw_pixel:
 #     getPixelAddress 
 #     store the color into the pixel address 
+#
 # get_pixel:
 #     getPixelAddress
+#
 # draw_verticle_line:
-#     traverse bitmap, add y by 1 byte from [0, 128):
-#          draw_pixel
+#     x = given x value 
+#     y = 0  
+#     verticle:
+#         branch if y >= 128
+#         get pixelAddress
+#         store color in address 
+#         y += 1 
+#
 # draw_horizontal_line: 
-#     traverse bitmpa, add x by 1 byte from [0, 128)
+#     y = given y value 
+#     x = 0  
+#     horizontal:
+#         branch if x >= 128
+#         get pixelAddress
+#         store color in address 
+#         x += 1 
+#
 # draw_crosshair:
-#     store (x, y) bit to save color 
-#     draw horizontal line
-#     draw verticle line 
-#     recolor (x, y) with old color 
+#     store intersection (x, y) bit to save color 
+#     y = given y value 
+#     x = 0  
+#     horizontal:
+#         branch if x >= 128
+#         get pixelAddress
+#         store color in address 
+#         x += 1 
+#     x = given x value 
+#     y = 0  
+#     verticle:
+#         branch if y >= 128
+#         get pixelAddress
+#         store color in address 
+#         y += 1 
+#     recolor intersection (x, y) with old color 
 ######################################################
 # Macros for instructor use (you shouldn't need these)
 ######################################################
@@ -186,7 +225,7 @@ draw_pixel: nop
 # $t0: x register 
 # $t1: y register 
 # $t2: origin
-# $t3: pixel adress  
+# $t3: pixel address  
 get_pixel: nop
 	# YOUR CODE HERE, only use t registers (and a, v where appropriate)
 	getCoordinates($a0 $t0 $t1)                    # get x and y values at $a0 
@@ -204,9 +243,24 @@ get_pixel: nop
 # Outputs:
 #	No register outputs
 #*****************************************************
+# $t0: x coordinate
+# $t1: y coordinate
+# $t2: origin
+# $t3: pixel address 
 draw_horizontal_line: nop
-	# YOUR CODE HERE, only use t registers (and a, v where appropriate)
- 	jr $ra
+ 	# YOUR CODE HERE, only use t registers (and a, v where appropriate)
+ 	lw $t2 originAddress                          # start with the origin, (0,0) 
+ 	li $t0 0                                      # initialize x coordinate to 0
+ 	move $t1 $a0                                  # move y coordinate into $t1 
+ 	horizontal:                                   # traverse through rows 
+ 	     bge $t0 128 horizontalEnd                # branch if x >= 128
+             nop
+ 	     getPixelAddress($t3 $t0 $t1 $t2)         # get address of (x,y)
+             sw $a1 ($t3)                             # store color from $a1 in (x,y)
+ 	     addi $t0 $t0 1                           # increase x value  
+ 	     j horizontal                             # restart horizontal loop
+ 	horizontalEnd:                                # end horizontal loop 
+ 	jr $ra                                        # return to register address 
 
 
 #*****************************************************
@@ -218,9 +272,24 @@ draw_horizontal_line: nop
 # Outputs:
 #	No register outputs
 #*****************************************************
+# $t0: x coordinate
+# $t1: y coordinate
+# $t2: origin
+# $t3: pixel address 
 draw_vertical_line: nop
 	# YOUR CODE HERE, only use t registers (and a, v where appropriate)
- 	jr $ra
+ 	lw $t2 originAddress                          # start with the origin, (0,0) 
+ 	li $t1 0                                      # initialize x coordinate to 0
+ 	move $t0 $a0                                  # move y coordinate into $t1 
+ 	vertical:                                     # traverse through rows 
+ 	     bge $t1 128 verticalEnd                  # branch if x >= 128
+             nop
+ 	     getPixelAddress($t3 $t0 $t1 $t2)         # get address of (x,y)
+             sw $a1 ($t3)                             # store color from $a1 in (x,y)
+ 	     addi $t1 $t1 1                           # increase x value  
+ 	     j vertical                               # restart horizontal loop
+ 	verticalEnd:                                  # end horizontal loop 
+ 	jr $ra                                        # return to register address 
 
 
 #*****************************************************
@@ -251,16 +320,36 @@ draw_crosshair: nop
 	
 	# get current color of pixel at the intersection, store it in s4
 	# YOUR CODE HERE, only use the s0-s4 registers (and a, v where appropriate)
-
+        move $s4 $a0                                  # store the current color in s4 
+        
 	# draw horizontal line (by calling your `draw_horizontal_line`) function
 	# YOUR CODE HERE, only use the s0-s4 registers (and a, v where appropriate)
-
+        li $ 0                                      # initialize x coordinate to 0
+ 	horizontalCross:                                   # traverse through rows 
+ 	     bge $ 128 horizontalCrossEnd                # branch if x >= 128
+             nop
+ 	     getPixelAddress($)         # get address of (x,y)
+             sw $s1 ()                             # store color from $a1 in (x,y)
+ 	     addi $ $ 1                           # increase x value  
+ 	     j horizontalCross                             # restart horizontal loop
+ 	horizontalCrossEnd:                                # end horizontal loop 
+ 	
 	# draw vertical line (by calling your `draw_vertical_line`) function
 	# YOUR CODE HERE, only use the s0-s4 registers (and a, v where appropriate)
-
+        li $ 0                                      # initialize x coordinate to 0
+ 	verticalCross:                                     # traverse through rows 
+ 	     bge $ 128 verticalCrossEnd                  # branch if x >= 128
+             nop
+ 	     getPixelAddress()         # get address of (x,y)
+             sw $s1 ()                             # store color from $a1 in (x,y)
+ 	     addi $ $ 1                           # increase x value  
+ 	     j verticalCross                               # restart horizontal loop
+ 	verticalCrossEnd:                                  # end horizontal loop 
 	# restore pixel at the intersection to its previous color
 	# YOUR CODE HERE, only use the s0-s4 registers (and a, v where appropriate)
-
+        getPixelAddress($s0 $s2 $s3 $t4)         # get address of (x,y)
+        sw $s4 ($s0)                             # store color from $a1 in (x,y)
+	
 	move $sp $s5
 	pop($s5)
 	pop($s4)
