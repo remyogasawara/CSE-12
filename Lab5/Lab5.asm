@@ -20,7 +20,7 @@
 # Psuedocode:  
 # getCoordinate 
 #     x = srl output by 16  
-#     y = andi output by 0xFFFF
+#     y = andi output by 0xFF
 #
 # formatCoordiante:
 #     x shift left 16
@@ -49,6 +49,7 @@
 #
 # get_pixel:
 #     getPixelAddress
+#     load pixel address into v0 
 #
 # draw_verticle_line:
 #     x = given x value 
@@ -69,22 +70,10 @@
 #         x += 1 
 #
 # draw_crosshair:
-#     store intersection (x, y) bit to save color 
-#     y = given y value 
-#     x = 0  
-#     horizontal:
-#         branch if x >= 128
-#         get pixelAddress
-#         store color in address 
-#         x += 1 
-#     x = given x value 
-#     y = 0  
-#     verticle:
-#         branch if y >= 128
-#         get pixelAddress
-#         store color in address 
-#         y += 1 
-#     recolor intersection (x, y) with old color 
+#     store intersection (x, y) bit to save color with get_pixel
+#     draw_horizontal_line  
+#     draw_verticle_line 
+#     move saved color into intersection with draw_pixel 
 ######################################################
 # Macros for instructor use (you shouldn't need these)
 ######################################################
@@ -320,35 +309,27 @@ draw_crosshair: nop
 	
 	# get current color of pixel at the intersection, store it in s4
 	# YOUR CODE HERE, only use the s0-s4 registers (and a, v where appropriate)
-        move $s4 $a0                                  # store the current color in s4 
+        move $a0 $s0                                  # move the (x,y) coordinate into a0 
+	jal get_pixel                                 # outputs the color of the pixel into v0 
+        move $s4 $v0                                  # store the current color in s4 
         
 	# draw horizontal line (by calling your `draw_horizontal_line`) function
 	# YOUR CODE HERE, only use the s0-s4 registers (and a, v where appropriate)
-        li $ 0                                      # initialize x coordinate to 0
- 	horizontalCross:                                   # traverse through rows 
- 	     bge $ 128 horizontalCrossEnd                # branch if x >= 128
-             nop
- 	     getPixelAddress($)         # get address of (x,y)
-             sw $s1 ()                             # store color from $a1 in (x,y)
- 	     addi $ $ 1                           # increase x value  
- 	     j horizontalCross                             # restart horizontal loop
- 	horizontalCrossEnd:                                # end horizontal loop 
- 	
+        move $a0 $s3                                  # move y coordinate into a0 
+	move $a1 $s1                                  # move color into a1 
+	jal draw_horizontal_line                      # draw horizontal line 
+	
 	# draw vertical line (by calling your `draw_vertical_line`) function
 	# YOUR CODE HERE, only use the s0-s4 registers (and a, v where appropriate)
-        li $ 0                                      # initialize x coordinate to 0
- 	verticalCross:                                     # traverse through rows 
- 	     bge $ 128 verticalCrossEnd                  # branch if x >= 128
-             nop
- 	     getPixelAddress()         # get address of (x,y)
-             sw $s1 ()                             # store color from $a1 in (x,y)
- 	     addi $ $ 1                           # increase x value  
- 	     j verticalCross                               # restart horizontal loop
- 	verticalCrossEnd:                                  # end horizontal loop 
+        move $a0 $s2                                  # move x coordinate into a0 
+	move $a1 $s1                                  # move color into a1 
+	jal draw_vertical_line                        # draw vertical line 
+	
 	# restore pixel at the intersection to its previous color
 	# YOUR CODE HERE, only use the s0-s4 registers (and a, v where appropriate)
-        getPixelAddress($s0 $s2 $s3 $t4)         # get address of (x,y)
-        sw $s4 ($s0)                             # store color from $a1 in (x,y)
+        move $a0 $s0                                  # move intersection (x,y) into a0 
+	move $a1 $s4                                  # move intersection (x,y) into a0 
+	jal draw_pixel                                # recolors intersection to previous color 
 	
 	move $sp $s5
 	pop($s5)
