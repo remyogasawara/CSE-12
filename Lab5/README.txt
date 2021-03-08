@@ -6,16 +6,13 @@ Lab 5: Functions and Graphics
 -----------
 DESCRIPTION
 
-In this lab, we implement functions that perform some primitive graphics operations on a small simulated display. These functions allow users to change the background color of the display and draw horizontal and vertical lines on the display. 
+In this lab, we implement macros and functions that perform some primitive graphics operations on a small simulated display. These functions allow users to change the background color of the display, draw and retrieve pixels, draw horizontal and vertical lines on the display, and draw crosshairs. 
 
 -----------
 FILES
 
 Lab5.asm
 This file includes the pseudocode and written code. 
-
-lab4_w21_test.asm 
-This file includes test cases for each of the subroutines. 
 
 -----------
 INSTRUCTIONS
