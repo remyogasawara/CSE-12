@@ -115,8 +115,8 @@
 #	%y: register containing 0x000000YY
 #	%output: register to store 0x00XX00YY in
 .macro formatCoordinates(%output %x %y)
-	sll %x      %x 16                               # shift 0x000000XX to be 0x00XX0000 and store in %x
-	or  %output %x %y                               # 0x00XX0000 or 0x000000YY to get 0x00XX00YY and store in %output 
+	sll %output %x      16                          # shift 0x000000XX to be 0x00XX0000 and store in %output
+	or  %output %output %y                          # 0x00XX0000 or 0x000000YY to get 0x00XX00YY and store in %output 
 .end_macro 
 
 # Macro that converts pixel coordinate to address
@@ -146,6 +146,8 @@ syscall
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #  Subroutines defined below
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# registers for each subroutine is defined above each subroutine
+#
 #*****************************************************
 # Clear_bitmap: Given a color, will fill the bitmap 
 #	display with that color.
@@ -293,6 +295,13 @@ draw_vertical_line: nop
 # Outputs:
 #	No register outputs
 #*****************************************************
+# $a0: holds the (x,y) coordinate 
+# $a1: holds the color in 0x00RRGGBB format 
+# $s0: stores the 0x00XX00YY
+# $s1: stores the 0x00RRGGBB
+# $s2: stores the x value 
+# $s3: stores the y value 
+# $s4: stores the intersection (x,y) 
 draw_crosshair: nop
 	push($ra)
 	push($s0)

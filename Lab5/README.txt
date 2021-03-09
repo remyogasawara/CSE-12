@@ -12,7 +12,7 @@ In this lab, we implement macros and functions that perform some primitive graph
 FILES
 
 Lab5.asm
-This file includes the pseudocode and written code. 
+This file includes the pseudocode and written code. This holds the code for all of the functions and macros. This file should compile, but has no output.   
 
 -----------
 INSTRUCTIONS
